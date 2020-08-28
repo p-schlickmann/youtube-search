@@ -1,28 +1,29 @@
-import React from 'react'
+import React, {useState} from 'react'
 
 import youtube from '../api/youtube'
 import SearchBar from './SearchBar'
 import VideoDetail from './VideoDetail'
 import VideoList from './VideoList'
 
+const App = () => {
+    const [videos, setVideos] = useState([])
+    const [selectedVideo, setSelectedVideo] = useState({})
 
-class App extends React.Component {
-    state = { videos: [] , selectedVideo:{}}
-
-    callApi = async query => {
+    const callApi = async query => {
         const response = await youtube.get('/search', {
             params: {
                 q: query
             }
         })
-
-        this.setState({videos: response.data.items, selectedVideo: {}})
+        setSelectedVideo({})
+        setVideos(response.data.items)
     }
 
-    onClickVideo = (video) => {
-        this.setState({selectedVideo: video})
+    const onClickVideo = (video) => {
+        setSelectedVideo(video)
     }
-    isEmpty = (object) => {
+
+    const isObjectEmpty = (object) => {
         for(var prop in object) {
             if(object.hasOwnProperty(prop)) {
               return false;
@@ -31,26 +32,26 @@ class App extends React.Component {
         
           return JSON.stringify(object) === JSON.stringify({});
         }
-    
-    renderContent() {
-        if (this.isEmpty(this.state.selectedVideo)) {
+
+    const renderContent = () => {
+        if (isObjectEmpty(selectedVideo)) {
             return (
                 <div className="ui container">
-                    <SearchBar onSubmit={ this.callApi } />
-                    <VideoList videos={this.state.videos} onClick={this.onClickVideo}/>
+                    <SearchBar onSubmit={ callApi } />
+                    <VideoList videos={videos} onClick={onClickVideo}/>
                 </div>
             )
         }
         return (
             <div className="ui container">
-                <SearchBar onSubmit={ this.callApi } />
+                <SearchBar onSubmit={ callApi } />
                 <div className="ui grid">
                     <div className="ui row">
                         <div className="eleven wide column">
-                            <VideoDetail video={this.state.selectedVideo}/>
+                            <VideoDetail video={selectedVideo}/>
                         </div>
                         <div className="five wide column">
-                            <VideoList videos={this.state.videos} onClick={this.onClickVideo}/>
+                            <VideoList videos={videos} onClick={onClickVideo}/>
                         </div>
                     </div>
                 </div>
@@ -59,9 +60,8 @@ class App extends React.Component {
             </div>
         )
     }
-    render() {
-        return this.renderContent()
-    }
+
+    return renderContent()
 }
 
 export default App
